@@ -1,5 +1,6 @@
 package com.bangkit.acnetect.presentation.main
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -11,10 +12,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bangkit.acnetect.R
-import com.bangkit.acnetect.adapter.ArticleAdapter
+import com.bangkit.acnetect.adapter.MainAdapter
 import com.bangkit.acnetect.databinding.ActivityMainBinding
-import com.bangkit.acnetect.model.Article
+import com.bangkit.acnetect.model.ModelMain
 import com.bangkit.acnetect.model.User
+import com.bangkit.acnetect.presentation.camera.AddScanJava
 import com.bangkit.acnetect.presentation.user.UserActivity
 import com.bangkit.acnetect.utils.showDialogError
 import com.bumptech.glide.Glide
@@ -73,13 +75,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Recyclerview
-    private var article: MutableList<Article> = ArrayList()
-    lateinit var articleAdapter: ArticleAdapter
+    private var modelMain: MutableList<ModelMain> = ArrayList()
+    lateinit var mainAdapter: MainAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mainBinding.root)
+
+        scan.setOnClickListener {
+            val intent = Intent(this, AddScanJava::class.java)
+            startActivity(intent)
+        }
 
         //Init
         userDatabase = FirebaseDatabase.getInstance().getReference("users")
@@ -91,6 +98,8 @@ class MainActivity : AppCompatActivity() {
 
         getDataFirebase()
         onAction()
+
+
 
         //transparent background searchview
         val searchPlateId = searchData.getContext()
@@ -105,7 +114,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                articleAdapter.filter.filter(newText)
+                mainAdapter.filter.filter(newText)
                 return true
             }
         })
@@ -115,6 +124,7 @@ class MainActivity : AppCompatActivity() {
 
         //get data json
         getListAcne()
+
     }
 
     var imageListener: ImageListener = object : ImageListener {
@@ -162,18 +172,18 @@ class MainActivity : AppCompatActivity() {
                 val jsonArray = jsonObject.getJSONArray("daftar_acne")
                 for (i in 0 until jsonArray.length()) {
                     val jsonObjectData = jsonArray.getJSONObject(i)
-                    val dataApi = Article()
+                    val dataApi = ModelMain()
                     dataApi.nama = jsonObjectData.getString("nama")
                     dataApi.penyebab = jsonObjectData.getString("penyebab")
                     dataApi.solusi = jsonObjectData.getString("solusi")
                     dataApi.image = jsonObjectData.getString("img")
                     dataApi.penjelasan = jsonObjectData.getString("penjelasan")
-                    article.add(dataApi)
+                    modelMain.add(dataApi)
                 }
-                articleAdapter = ArticleAdapter(this, article)
+                mainAdapter = MainAdapter(this, modelMain)
                 val manager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
                 rvAcne.layoutManager = manager
-                rvAcne.adapter = articleAdapter
+                rvAcne.adapter = mainAdapter
             } catch (e: JSONException) {
                 e.printStackTrace()
             }
